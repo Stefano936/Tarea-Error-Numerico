@@ -1,6 +1,6 @@
 # Revisión final
 
-Este registro documenta el control integral del trabajo. El hash del commit de contenido se incorporará después de completar la inspección visual y antes del push.
+Este registro documenta el control integral del trabajo terminado.
 
 ## Archivos creados y modificados
 
@@ -94,4 +94,4 @@ Los cuatro PDF de referencia se leyeron íntegramente antes de redactar. La cons
 
 ## Commit verificado
 
-Pendiente de incorporar tras la revisión visual final.
+El contenido académico, el código, los datos, las figuras y el PDF revisados quedaron fijados en el commit `6713e0758fdbe6f1b8ff490f8ef90d92a56c359f`. El commit posterior incorpora únicamente este hash de trazabilidad al registro; por la naturaleza autorreferencial de un hash Git, un archivo no puede contener el identificador del mismo commit que lo modifica.
