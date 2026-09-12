@@ -1,0 +1,5 @@
+tipo,bits,minimo,maximo,A_N,B_N,C_N,bits_de_10_elevado_1000
+Python int,variable,sin límite fijo,sin límite fijo,1000,1000,1000,3322
+int8,8,-128,127,-24,-24,-24,no representable
+int32,32,-2147483648,2147483647,1000,1000,1000,no representable
+int64,64,-9223372036854775808,9223372036854775807,1000,1000,1000,no representable

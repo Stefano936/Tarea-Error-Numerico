@@ -1,0 +1,29 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+
+# LaTeX: se conserva únicamente el PDF final
+informe_latex/*.aux
+informe_latex/*.bbl
+informe_latex/*.bcf
+informe_latex/*.blg
+informe_latex/*.fdb_latexmk
+informe_latex/*.fls
+informe_latex/*.log
+informe_latex/*.out
+informe_latex/*.run.xml
+informe_latex/*.synctex.gz
+informe_latex/*.toc
+informe_latex/*.xdv
+informe_latex/main.pdf
+
+# Material privado y temporales
+referencias_privadas/
+tmp/
+*.tmp
+.DS_Store
+Thumbs.db

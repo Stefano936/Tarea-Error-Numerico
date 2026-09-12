@@ -1,0 +1,531 @@
+{
+  "entorno": {
+    "python": "3.14.3",
+    "numpy": "2.3.5",
+    "matplotlib": "3.10.8",
+    "plataforma": "Windows-11-10.0.26200-SP0",
+    "epsilon_float64": 2.220446049250313e-16,
+    "semilla_barrido_pequeno": 20260912,
+    "semilla_barrido_grande": 20260913,
+    "semilla_inicial_repeticiones": 20260914,
+    "piso_solo_grafico": 5e-18
+  },
+  "prohibicion_sum": {
+    "llamadas_detectadas": 0
+  },
+  "asociatividad": [
+    {
+      "tipo_b": "int",
+      "b": 2,
+      "asociacion": "(1+b^k)-b^k",
+      "a_1000": 1000.0,
+      "primera_desviacion_de_N": null,
+      "ultimo_N_finito": 1000
+    },
+    {
+      "tipo_b": "int",
+      "b": 2,
+      "asociacion": "1+(b^k-b^k)",
+      "a_1000": 1000.0,
+      "primera_desviacion_de_N": null,
+      "ultimo_N_finito": 1000
+    },
+    {
+      "tipo_b": "int",
+      "b": 2,
+      "asociacion": "(1-b^k)+b^k",
+      "a_1000": 1000.0,
+      "primera_desviacion_de_N": null,
+      "ultimo_N_finito": 1000
+    },
+    {
+      "tipo_b": "int",
+      "b": 3,
+      "asociacion": "(1+b^k)-b^k",
+      "a_1000": 1000.0,
+      "primera_desviacion_de_N": null,
+      "ultimo_N_finito": 1000
+    },
+    {
+      "tipo_b": "int",
+      "b": 3,
+      "asociacion": "1+(b^k-b^k)",
+      "a_1000": 1000.0,
+      "primera_desviacion_de_N": null,
+      "ultimo_N_finito": 1000
+    },
+    {
+      "tipo_b": "int",
+      "b": 3,
+      "asociacion": "(1-b^k)+b^k",
+      "a_1000": 1000.0,
+      "primera_desviacion_de_N": null,
+      "ultimo_N_finito": 1000
+    },
+    {
+      "tipo_b": "int",
+      "b": 5,
+      "asociacion": "(1+b^k)-b^k",
+      "a_1000": 1000.0,
+      "primera_desviacion_de_N": null,
+      "ultimo_N_finito": 1000
+    },
+    {
+      "tipo_b": "int",
+      "b": 5,
+      "asociacion": "1+(b^k-b^k)",
+      "a_1000": 1000.0,
+      "primera_desviacion_de_N": null,
+      "ultimo_N_finito": 1000
+    },
+    {
+      "tipo_b": "int",
+      "b": 5,
+      "asociacion": "(1-b^k)+b^k",
+      "a_1000": 1000.0,
+      "primera_desviacion_de_N": null,
+      "ultimo_N_finito": 1000
+    },
+    {
+      "tipo_b": "int",
+      "b": 10,
+      "asociacion": "(1+b^k)-b^k",
+      "a_1000": 1000.0,
+      "primera_desviacion_de_N": null,
+      "ultimo_N_finito": 1000
+    },
+    {
+      "tipo_b": "int",
+      "b": 10,
+      "asociacion": "1+(b^k-b^k)",
+      "a_1000": 1000.0,
+      "primera_desviacion_de_N": null,
+      "ultimo_N_finito": 1000
+    },
+    {
+      "tipo_b": "int",
+      "b": 10,
+      "asociacion": "(1-b^k)+b^k",
+      "a_1000": 1000.0,
+      "primera_desviacion_de_N": null,
+      "ultimo_N_finito": 1000
+    },
+    {
+      "tipo_b": "float",
+      "b": 2.0,
+      "asociacion": "(1+b^k)-b^k",
+      "a_1000": 52.0,
+      "primera_desviacion_de_N": 53,
+      "ultimo_N_finito": 1000
+    },
+    {
+      "tipo_b": "float",
+      "b": 2.0,
+      "asociacion": "1+(b^k-b^k)",
+      "a_1000": 1000.0,
+      "primera_desviacion_de_N": null,
+      "ultimo_N_finito": 1000
+    },
+    {
+      "tipo_b": "float",
+      "b": 2.0,
+      "asociacion": "(1-b^k)+b^k",
+      "a_1000": 53.0,
+      "primera_desviacion_de_N": 54,
+      "ultimo_N_finito": 1000
+    },
+    {
+      "tipo_b": "float",
+      "b": 3.0,
+      "asociacion": "(1+b^k)-b^k",
+      "a_1000": null,
+      "primera_desviacion_de_N": 34,
+      "ultimo_N_finito": 646
+    },
+    {
+      "tipo_b": "float",
+      "b": 3.0,
+      "asociacion": "1+(b^k-b^k)",
+      "a_1000": null,
+      "primera_desviacion_de_N": 647,
+      "ultimo_N_finito": 646
+    },
+    {
+      "tipo_b": "float",
+      "b": 3.0,
+      "asociacion": "(1-b^k)+b^k",
+      "a_1000": null,
+      "primera_desviacion_de_N": 34,
+      "ultimo_N_finito": 646
+    },
+    {
+      "tipo_b": "float",
+      "b": 5.0,
+      "asociacion": "(1+b^k)-b^k",
+      "a_1000": null,
+      "primera_desviacion_de_N": 23,
+      "ultimo_N_finito": 441
+    },
+    {
+      "tipo_b": "float",
+      "b": 5.0,
+      "asociacion": "1+(b^k-b^k)",
+      "a_1000": null,
+      "primera_desviacion_de_N": 442,
+      "ultimo_N_finito": 441
+    },
+    {
+      "tipo_b": "float",
+      "b": 5.0,
+      "asociacion": "(1-b^k)+b^k",
+      "a_1000": null,
+      "primera_desviacion_de_N": 23,
+      "ultimo_N_finito": 441
+    },
+    {
+      "tipo_b": "float",
+      "b": 10.0,
+      "asociacion": "(1+b^k)-b^k",
+      "a_1000": null,
+      "primera_desviacion_de_N": 16,
+      "ultimo_N_finito": 308
+    },
+    {
+      "tipo_b": "float",
+      "b": 10.0,
+      "asociacion": "1+(b^k-b^k)",
+      "a_1000": null,
+      "primera_desviacion_de_N": 309,
+      "ultimo_N_finito": 308
+    },
+    {
+      "tipo_b": "float",
+      "b": 10.0,
+      "asociacion": "(1-b^k)+b^k",
+      "a_1000": null,
+      "primera_desviacion_de_N": 16,
+      "ultimo_N_finito": 308
+    }
+  ],
+  "asociatividad_negativa": [
+    {
+      "tipo_b": "float negativo",
+      "b": -2.0,
+      "asociacion": "(1+b^k)-b^k",
+      "a_1000": 53.0,
+      "primera_desviacion_de_N": 54,
+      "ultimo_N_finito": 1000
+    },
+    {
+      "tipo_b": "float negativo",
+      "b": -2.0,
+      "asociacion": "1+(b^k-b^k)",
+      "a_1000": 1000.0,
+      "primera_desviacion_de_N": null,
+      "ultimo_N_finito": 1000
+    },
+    {
+      "tipo_b": "float negativo",
+      "b": -2.0,
+      "asociacion": "(1-b^k)+b^k",
+      "a_1000": 52.0,
+      "primera_desviacion_de_N": 53,
+      "ultimo_N_finito": 1000
+    },
+    {
+      "tipo_b": "float negativo",
+      "b": -3.0,
+      "asociacion": "(1+b^k)-b^k",
+      "a_1000": null,
+      "primera_desviacion_de_N": 34,
+      "ultimo_N_finito": 646
+    },
+    {
+      "tipo_b": "float negativo",
+      "b": -3.0,
+      "asociacion": "1+(b^k-b^k)",
+      "a_1000": null,
+      "primera_desviacion_de_N": 647,
+      "ultimo_N_finito": 646
+    },
+    {
+      "tipo_b": "float negativo",
+      "b": -3.0,
+      "asociacion": "(1-b^k)+b^k",
+      "a_1000": null,
+      "primera_desviacion_de_N": 34,
+      "ultimo_N_finito": 646
+    },
+    {
+      "tipo_b": "float negativo",
+      "b": -5.0,
+      "asociacion": "(1+b^k)-b^k",
+      "a_1000": null,
+      "primera_desviacion_de_N": 23,
+      "ultimo_N_finito": 441
+    },
+    {
+      "tipo_b": "float negativo",
+      "b": -5.0,
+      "asociacion": "1+(b^k-b^k)",
+      "a_1000": null,
+      "primera_desviacion_de_N": 442,
+      "ultimo_N_finito": 441
+    },
+    {
+      "tipo_b": "float negativo",
+      "b": -5.0,
+      "asociacion": "(1-b^k)+b^k",
+      "a_1000": null,
+      "primera_desviacion_de_N": 23,
+      "ultimo_N_finito": 441
+    },
+    {
+      "tipo_b": "float negativo",
+      "b": -10.0,
+      "asociacion": "(1+b^k)-b^k",
+      "a_1000": null,
+      "primera_desviacion_de_N": 16,
+      "ultimo_N_finito": 308
+    },
+    {
+      "tipo_b": "float negativo",
+      "b": -10.0,
+      "asociacion": "1+(b^k-b^k)",
+      "a_1000": null,
+      "primera_desviacion_de_N": 309,
+      "ultimo_N_finito": 308
+    },
+    {
+      "tipo_b": "float negativo",
+      "b": -10.0,
+      "asociacion": "(1-b^k)+b^k",
+      "a_1000": null,
+      "primera_desviacion_de_N": 16,
+      "ultimo_N_finito": 308
+    }
+  ],
+  "bases_modulo_menor_o_igual_a_uno": [
+    {
+      "tipo_b": "float |b|<=1",
+      "b": -1.0,
+      "asociacion": "(1+b^k)-b^k",
+      "a_1000": 1000.0,
+      "primera_desviacion_de_N": null,
+      "ultimo_N_finito": 1000
+    },
+    {
+      "tipo_b": "float |b|<=1",
+      "b": -1.0,
+      "asociacion": "1+(b^k-b^k)",
+      "a_1000": 1000.0,
+      "primera_desviacion_de_N": null,
+      "ultimo_N_finito": 1000
+    },
+    {
+      "tipo_b": "float |b|<=1",
+      "b": -1.0,
+      "asociacion": "(1-b^k)+b^k",
+      "a_1000": 1000.0,
+      "primera_desviacion_de_N": null,
+      "ultimo_N_finito": 1000
+    },
+    {
+      "tipo_b": "float |b|<=1",
+      "b": -0.5,
+      "asociacion": "(1+b^k)-b^k",
+      "a_1000": 1000.0,
+      "primera_desviacion_de_N": null,
+      "ultimo_N_finito": 1000
+    },
+    {
+      "tipo_b": "float |b|<=1",
+      "b": -0.5,
+      "asociacion": "1+(b^k-b^k)",
+      "a_1000": 1000.0,
+      "primera_desviacion_de_N": null,
+      "ultimo_N_finito": 1000
+    },
+    {
+      "tipo_b": "float |b|<=1",
+      "b": -0.5,
+      "asociacion": "(1-b^k)+b^k",
+      "a_1000": 1000.0,
+      "primera_desviacion_de_N": null,
+      "ultimo_N_finito": 1000
+    },
+    {
+      "tipo_b": "float |b|<=1",
+      "b": 0.0,
+      "asociacion": "(1+b^k)-b^k",
+      "a_1000": 1000.0,
+      "primera_desviacion_de_N": null,
+      "ultimo_N_finito": 1000
+    },
+    {
+      "tipo_b": "float |b|<=1",
+      "b": 0.0,
+      "asociacion": "1+(b^k-b^k)",
+      "a_1000": 1000.0,
+      "primera_desviacion_de_N": null,
+      "ultimo_N_finito": 1000
+    },
+    {
+      "tipo_b": "float |b|<=1",
+      "b": 0.0,
+      "asociacion": "(1-b^k)+b^k",
+      "a_1000": 1000.0,
+      "primera_desviacion_de_N": null,
+      "ultimo_N_finito": 1000
+    },
+    {
+      "tipo_b": "float |b|<=1",
+      "b": 0.5,
+      "asociacion": "(1+b^k)-b^k",
+      "a_1000": 1000.0,
+      "primera_desviacion_de_N": null,
+      "ultimo_N_finito": 1000
+    },
+    {
+      "tipo_b": "float |b|<=1",
+      "b": 0.5,
+      "asociacion": "1+(b^k-b^k)",
+      "a_1000": 1000.0,
+      "primera_desviacion_de_N": null,
+      "ultimo_N_finito": 1000
+    },
+    {
+      "tipo_b": "float |b|<=1",
+      "b": 0.5,
+      "asociacion": "(1-b^k)+b^k",
+      "a_1000": 1000.0,
+      "primera_desviacion_de_N": null,
+      "ultimo_N_finito": 1000
+    },
+    {
+      "tipo_b": "float |b|<=1",
+      "b": 1.0,
+      "asociacion": "(1+b^k)-b^k",
+      "a_1000": 1000.0,
+      "primera_desviacion_de_N": null,
+      "ultimo_N_finito": 1000
+    },
+    {
+      "tipo_b": "float |b|<=1",
+      "b": 1.0,
+      "asociacion": "1+(b^k-b^k)",
+      "a_1000": 1000.0,
+      "primera_desviacion_de_N": null,
+      "ultimo_N_finito": 1000
+    },
+    {
+      "tipo_b": "float |b|<=1",
+      "b": 1.0,
+      "asociacion": "(1-b^k)+b^k",
+      "a_1000": 1000.0,
+      "primera_desviacion_de_N": null,
+      "ultimo_N_finito": 1000
+    }
+  ],
+  "enteros_fijos": [
+    {
+      "tipo": "Python int",
+      "bits": "variable",
+      "minimo": "sin límite fijo",
+      "maximo": "sin límite fijo",
+      "A_N": 1000,
+      "B_N": 1000,
+      "C_N": 1000,
+      "bits_de_10_elevado_1000": 3322
+    },
+    {
+      "tipo": "int8",
+      "bits": 8,
+      "minimo": -128,
+      "maximo": 127,
+      "A_N": -24,
+      "B_N": -24,
+      "C_N": -24,
+      "bits_de_10_elevado_1000": "no representable"
+    },
+    {
+      "tipo": "int32",
+      "bits": 32,
+      "minimo": -2147483648,
+      "maximo": 2147483647,
+      "A_N": 1000,
+      "B_N": 1000,
+      "C_N": 1000,
+      "bits_de_10_elevado_1000": "no representable"
+    },
+    {
+      "tipo": "int64",
+      "bits": 64,
+      "minimo": -9223372036854775808,
+      "maximo": 9223372036854775807,
+      "A_N": 1000,
+      "B_N": 1000,
+      "C_N": 1000,
+      "bits_de_10_elevado_1000": "no representable"
+    }
+  ],
+  "orden_N_10000": {
+    "N": 10000,
+    "mayor_a_menor": 0.9999000099990007,
+    "menor_a_mayor": 0.9999000099990001,
+    "randomizada": 0.9999000099989979,
+    "kahan": 0.9999000099990001,
+    "referencia_N_sobre_N_mas_1": 0.9999000099990001,
+    "error_mayor_a_menor": 6.662004281565715e-16,
+    "error_menor_a_mayor": 0.0,
+    "error_randomizada": 2.220668093855238e-15,
+    "error_kahan": 0.0,
+    "semilla_barrido_aleatorio": 20260912
+  },
+  "orden_N_1000000": {
+    "N": 1000000,
+    "mayor_a_menor": 0.9999990000010476,
+    "menor_a_mayor": 0.999999000001,
+    "randomizada": 0.9999990000010327,
+    "kahan": 0.999999000001,
+    "referencia_N_sobre_N_mas_1": 0.999999000001,
+    "error_mayor_a_menor": 4.762861538498697e-14,
+    "error_menor_a_mayor": 0.0,
+    "error_randomizada": 3.2751611978021344e-14,
+    "error_kahan": 0.0,
+    "semilla_barrido_aleatorio": 20260913
+  },
+  "random_N_1000000": {
+    "repeticiones": 30,
+    "semilla_inicial": 20260914,
+    "semilla_final": 20260943,
+    "errores_distintos": 30,
+    "error_minimo": 2.2204482696963622e-15,
+    "error_mediano": 2.3092662004842167e-14,
+    "error_maximo": 6.128437224361961e-14,
+    "desvio_estandar_resultado": 2.2480917342052706e-14
+  },
+  "representaciones_N_10000": {
+    "N": 10000,
+    "b_directa": 0.9999000099990007,
+    "b_telescopica": 0.9999000099990004,
+    "b_referencia": 0.9999000099990001,
+    "error_b_directa": 6.662004281565715e-16,
+    "error_b_telescopica": 3.3310021407828574e-16,
+    "c_racionalizada": 4.784787737051912,
+    "c_sustractiva": 4.784787737080387,
+    "diferencia_c": 2.8475000135586015e-11
+  },
+  "bonus_b_N_2_53": {
+    "N": 9007199254740992,
+    "uno_menos_inversa": 0.9999999999999999,
+    "cociente": 1.0,
+    "diferencia_absoluta": 1.1102230246251565e-16
+  },
+  "bonus_c": {
+    "primer_k_error_relativo_ge_1e-12": 87,
+    "primer_k_error_relativo_ge_1e-8": 8193,
+    "primer_k_error_relativo_ge_1e-4": 860284,
+    "primer_k_termino_sustractivo_cero": 67108864
+  }
+}
