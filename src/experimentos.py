@@ -65,7 +65,11 @@ def escribir_csv(nombre: str, filas: Sequence[dict[str, object]]) -> None:
         raise ValueError(f"No hay filas para escribir en {nombre}")
     ruta = DIR_DATOS / nombre
     with ruta.open("w", encoding="utf-8", newline="") as archivo:
-        escritor = csv.DictWriter(archivo, fieldnames=list(filas[0]))
+        escritor = csv.DictWriter(
+            archivo,
+            fieldnames=list(filas[0]),
+            lineterminator="\n",
+        )
         escritor.writeheader()
         escritor.writerows(filas)
 

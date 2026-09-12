@@ -1,10 +1,13 @@
 import ast
 import math
 import random
+from fractions import Fraction
 from pathlib import Path
 
 import numpy as np
 import pytest
+
+import src.experimentos as experimentos
 
 from src.experimentos import (
     SEMILLA_REPETICIONES,
@@ -16,6 +19,7 @@ from src.experimentos import (
     c_sustractiva,
     curvas_asociativas,
     error_relativo,
+    escribir_csv,
     repeticiones_randomizadas,
     suma_kahan,
     suma_mayor_a_menor,
@@ -71,6 +75,35 @@ def test_formas_de_b_aproximan_referencia(n):
     exacto = n / (n + 1.0)
     assert math.isclose(b_directa(n), exacto, rel_tol=1e-13)
     assert math.isclose(b_telescopica(n), exacto, rel_tol=1e-13)
+
+
+@pytest.mark.parametrize("n", [10, 1000, 10000])
+def test_formas_de_b_contra_referencia_racional_exacta(n):
+    """Contrasta los floats con N/(N+1) como fracción matemática exacta."""
+    exacto = Fraction(n, n + 1)
+    for resultado in (b_directa(n), b_telescopica(n)):
+        error_relativo_exacto = (
+            abs(Fraction.from_float(resultado) - exacto) / exacto
+        )
+        assert error_relativo_exacto < Fraction(1, 10**12)
+
+
+def test_error_cero_float_no_implica_exactitud_real():
+    n = 1_000_000
+    referencia_float = n / (n + 1.0)
+    referencia_exacta = Fraction(n, n + 1)
+    for algoritmo in (suma_menor_a_mayor, suma_kahan):
+        resultado = algoritmo(n)
+        assert resultado == referencia_float
+        assert Fraction.from_float(resultado) != referencia_exacta
+
+
+def test_csv_usa_saltos_de_linea_unix(tmp_path, monkeypatch):
+    monkeypatch.setattr(experimentos, "DIR_DATOS", tmp_path)
+    escribir_csv("muestra.csv", [{"N": 1, "valor": 0.5}])
+    contenido = (tmp_path / "muestra.csv").read_bytes()
+    assert contenido == b"N,valor\n1,0.5\n"
+    assert b"\r\n" not in contenido
 
 
 def test_algoritmos_de_orden_reciben_solo_n_y_son_precisos():
