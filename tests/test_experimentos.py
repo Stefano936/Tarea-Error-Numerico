@@ -1,6 +1,7 @@
 import ast
 import math
 import random
+from decimal import Decimal, localcontext
 from fractions import Fraction
 from pathlib import Path
 
@@ -135,6 +136,26 @@ def test_menor_a_mayor_y_kahan_mejoran_en_n_grande():
     assert error_relativo(suma_kahan(n), exacto) < error_natural
 
 
+def test_orden_natural_no_absorbe_terminos_en_un_millon():
+    acumulado = 0.0
+    incorporaciones_sin_cambio = 0
+    acumulado_antes_del_ultimo = 0.0
+    ultimo_termino = 0.0
+    for indice, termino_np in enumerate(terminos_b(1_000_000), start=1):
+        termino = float(termino_np)
+        anterior = acumulado
+        acumulado += termino
+        if acumulado == anterior:
+            incorporaciones_sin_cambio += 1
+        if indice == 1_000_000:
+            acumulado_antes_del_ultimo = anterior
+            ultimo_termino = termino
+
+    razon_en_ulp = ultimo_termino / math.ulp(acumulado_antes_del_ultimo)
+    assert 9007.0 < razon_en_ulp < 9008.0
+    assert incorporaciones_sin_cambio == 0
+
+
 def test_repeticiones_aleatorias_son_reproducibles_y_variables():
     primera = repeticiones_randomizadas(n=10_000, repeticiones=5)
     segunda = repeticiones_randomizadas(n=10_000, repeticiones=5)
@@ -157,11 +178,31 @@ def test_cancelacion_en_indices_confirmados():
     }
 
 
+def test_cruce_de_1e_8_en_cancelacion_no_es_monotono():
+    errores: dict[int, Decimal] = {}
+    with localcontext() as contexto:
+        contexto.prec = 70
+        for k in (8193, 8194):
+            k_decimal = Decimal(k)
+            termino_exacto = (k_decimal * k_decimal + 1).sqrt() - k_decimal
+            termino_float = Decimal.from_float(math.sqrt(k * k + 1.0) - k)
+            errores[k] = abs(termino_float - termino_exacto) / termino_exacto
+
+    assert Decimal("1.11767e-8") < errores[8193] < Decimal("1.11769e-8")
+    assert Decimal("3.7380e-9") < errores[8194] < Decimal("3.7381e-9")
+    assert errores[8193] >= Decimal("1e-8")
+    assert errores[8194] < Decimal("1e-8")
+
+
 def test_bonus_b_incluye_entorno_de_dos_a_la_53():
     por_n = {fila["N"]: fila for fila in bonus_formas_cerradas_b()}
-    fila = por_n[2**53]
+    n = 2**53
+    fila = por_n[n]
     assert fila["uno_menos_inversa"] == math.nextafter(1.0, 0.0)
     assert fila["cociente"] == 1.0
+    assert fila["cociente_denominador_entero"] == math.nextafter(1.0, 0.0)
+    assert n / (n + 1) == math.nextafter(1.0, 0.0)
+    assert n / (n + 1.0) == 1.0
 
 
 @pytest.mark.parametrize("n", [0, -1, 1.5, True])

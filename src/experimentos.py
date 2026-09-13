@@ -367,29 +367,54 @@ def barrido_orden_suma(valores_n: Sequence[int], semilla: int) -> list[dict[str,
 
 def graficar_errores_orden(filas: Sequence[dict[str, object]], nombre: str) -> None:
     n = np.asarray([fila["N"] for fila in filas], dtype=np.int64)
-    fig, eje = plt.subplots(figsize=(7.6, 4.7))
-    metodos = (
-        ("error_mayor_a_menor", "Mayor a menor módulo", "#1f77b4"),
-        ("error_menor_a_mayor", "Menor a mayor módulo", "#2ca02c"),
-        ("error_randomizada", "Orden aleatorio", "#d95f02"),
-        ("error_kahan", "Kahan", "#7b3294"),
+    fig, ejes = plt.subplots(2, 1, figsize=(7.6, 6.0), sharex=True, sharey=True)
+    paneles = (
+        (
+            ejes[0],
+            "(a) Mayor a menor y orden aleatorio",
+            (
+                ("error_mayor_a_menor", "Mayor a menor módulo", "#1f77b4", "-", "o", (0, 45)),
+                ("error_randomizada", "Orden aleatorio", "#d95f02", "--", "s", (20, 45)),
+            ),
+        ),
+        (
+            ejes[1],
+            "(b) Menor a mayor y Kahan",
+            (
+                ("error_menor_a_mayor", "Menor a mayor módulo", "#2a7f3e", "-", "o", (0, 45)),
+                ("error_kahan", "Kahan", "#7b3294", ":", "s", (20, 45)),
+            ),
+        ),
     )
-    for clave, etiqueta, color in metodos:
-        originales = np.asarray([fila[clave] for fila in filas], dtype=np.float64)
-        eje.plot(n, np.maximum(originales, PISO_GRAFICO), label=etiqueta, color=color, linewidth=1.0)
-    eje.set_yscale("log")
-    eje.set_xlabel("Cantidad de términos, N")
-    eje.set_ylabel("Error relativo")
-    eje.legend(loc="best", ncol=2)
-    eje.text(
+    for eje, titulo, metodos in paneles:
+        for clave, etiqueta, color, estilo, marcador, frecuencia in metodos:
+            originales = np.asarray([fila[clave] for fila in filas], dtype=np.float64)
+            eje.plot(
+                n,
+                np.maximum(originales, PISO_GRAFICO),
+                label=etiqueta,
+                color=color,
+                linestyle=estilo,
+                linewidth=0.9,
+                marker=marcador,
+                markersize=2.4,
+                markevery=frecuencia,
+            )
+        eje.set_yscale("log")
+        eje.set_ylabel("Error relativo")
+        eje.set_title(titulo, fontsize=9.5, loc="left")
+        eje.legend(loc="best")
+        eje.grid(alpha=0.22)
+    ejes[1].set_xlabel("Cantidad de términos, N")
+    ejes[1].text(
         0.01,
         0.015,
         r"Piso solo gráfico: $5\times10^{-18}$ para errores originales iguales a cero.",
-        transform=eje.transAxes,
+        transform=ejes[1].transAxes,
         fontsize=7.5,
         color="0.32",
     )
-    fig.tight_layout()
+    fig.tight_layout(h_pad=0.8)
     fig.savefig(DIR_FIGURAS / nombre, bbox_inches="tight")
     plt.close(fig)
 
@@ -552,11 +577,13 @@ def bonus_formas_cerradas_b() -> list[dict[str, object]]:
     for n in sorted(valor for valor in candidatos if valor > 0):
         forma_uno = 1.0 - 1.0 / (n + 1.0)
         forma_dos = n / (n + 1.0)
+        cociente_con_denominador_entero = n / (n + 1)
         filas.append(
             {
                 "N": n,
                 "uno_menos_inversa": forma_uno,
                 "cociente": forma_dos,
+                "cociente_denominador_entero": cociente_con_denominador_entero,
                 "diferencia_absoluta": abs(forma_uno - forma_dos),
             }
         )

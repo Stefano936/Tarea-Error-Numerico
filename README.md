@@ -24,7 +24,9 @@ Las funciones solicitadas usan acumuladores explícitos y ninguna invoca la func
 
 ## Instalación
 
-Se requiere Python 3.11 o posterior. En PowerShell:
+NumPy 2.3.5 requiere Python 3.11 o posterior según sus metadatos; Matplotlib 3.10.8 requiere Python 3.10 o posterior y pytest 8.4.2, Python 3.9 o posterior. El conjunto fijado se probó efectivamente con Python 3.14.3 en Windows 11. Las versiones que satisfacen esos mínimos no fueron ensayadas de forma exhaustiva y no se presupone compatibilidad con versiones futuras de Python.
+
+En PowerShell:
 
 ```powershell
 python -m venv .venv
@@ -48,7 +50,15 @@ Desde la raíz del repositorio:
 .\.venv\Scripts\python.exe src\experimentos.py
 ```
 
+En Linux o macOS:
+
+```bash
+.venv/bin/python src/experimentos.py
+```
+
 La ejecución regenera todos los archivos de `datos/` y `figuras/`. Incluye exactamente los rangos `N=10,20,...,10000`, `N=1000,2000,...,1000000` y `N=1,10,20,...,10000` donde corresponde. Las semillas de los barridos aleatorios quedan registradas en los CSV.
+
+Los rangos exigidos se construyen con pasos enteros. Las grillas auxiliares de los bonus usan `numpy.logspace`; su conversión a enteros y el renderizado pueden variar ligeramente entre plataformas. Por eso, reproducir el procedimiento y las semillas no garantiza archivos binariamente idénticos fuera del entorno probado.
 
 ## Pruebas
 
@@ -56,10 +66,22 @@ La ejecución regenera todos los archivos de `datos/` y `figuras/`. Incluye exac
 .\.venv\Scripts\python.exe -m pytest -q
 ```
 
+En Linux o macOS:
+
+```bash
+.venv/bin/python -m pytest -q
+```
+
 También puede verificarse por separado la ausencia de llamadas a `sum`:
 
 ```powershell
 .\.venv\Scripts\python.exe src\experimentos.py --verificar-sum
+```
+
+En Linux o macOS:
+
+```bash
+.venv/bin/python src/experimentos.py --verificar-sum
 ```
 
 Repositorio público: <https://github.com/Stefano936/Tarea-Error-Numerico>

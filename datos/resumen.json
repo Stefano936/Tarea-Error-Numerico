@@ -520,6 +520,7 @@
     "N": 9007199254740992,
     "uno_menos_inversa": 0.9999999999999999,
     "cociente": 1.0,
+    "cociente_denominador_entero": 0.9999999999999999,
     "diferencia_absoluta": 1.1102230246251565e-16
   },
   "bonus_c": {
