@@ -24,6 +24,13 @@ Las funciones solicitadas usan acumuladores explícitos y ninguna invoca la func
 
 ## Instalación
 
+Primero, descargá el proyecto y entrá en su carpeta:
+
+```bash
+git clone https://github.com/Stefano936/Tarea-Error-Numerico.git
+cd Tarea-Error-Numerico
+```
+
 NumPy 2.3.5 requiere Python 3.11 o posterior según sus metadatos; Matplotlib 3.10.8 requiere Python 3.10 o posterior y pytest 8.4.2, Python 3.9 o posterior. El conjunto fijado se probó efectivamente con Python 3.14.3 en Windows 11. Las versiones que satisfacen esos mínimos no fueron ensayadas de forma exhaustiva y no se presupone compatibilidad con versiones futuras de Python.
 
 En PowerShell:
