@@ -1,4 +1,5 @@
 import ast
+import inspect
 import math
 import random
 from decimal import Decimal, localcontext
@@ -16,11 +17,14 @@ from src.experimentos import (
     b_directa,
     b_telescopica,
     bonus_formas_cerradas_b,
+    barrido_representaciones,
     c_racionalizada,
     c_sustractiva,
     curvas_asociativas,
     error_relativo,
+    estadisticas_representaciones_b,
     escribir_csv,
+    primer_cero_sustractivo_c,
     repeticiones_randomizadas,
     suma_kahan,
     suma_mayor_a_menor,
@@ -128,6 +132,14 @@ def test_auxiliar_numpy_respeta_acumulacion_explicita(n):
     assert _acumulacion_numpy(valores[::-1]) == suma_secuencial(reversed(valores))
 
 
+def test_auxiliar_numpy_respeta_permutacion_fija_bit_a_bit():
+    valores = terminos_b(10_000)
+    permutados = np.random.default_rng(20260914).permutation(valores)
+    resultado_numpy = np.float64(_acumulacion_numpy(permutados))
+    resultado_explicito = np.float64(suma_secuencial(permutados))
+    assert resultado_numpy.tobytes() == resultado_explicito.tobytes()
+
+
 def test_menor_a_mayor_y_kahan_mejoran_en_n_grande():
     n = 1_000_000
     exacto = n / (n + 1.0)
@@ -178,6 +190,44 @@ def test_cancelacion_en_indices_confirmados():
     }
 
 
+def test_busqueda_del_primer_cero_comienza_en_uno(monkeypatch):
+    llamadas: list[tuple[int, int]] = []
+
+    class DetenerBusqueda(Exception):
+        pass
+
+    def arange_controlado(inicio, fin, dtype):
+        llamadas.append((inicio, fin))
+        raise DetenerBusqueda
+
+    monkeypatch.setattr(experimentos.np, "arange", arange_controlado)
+    with pytest.raises(DetenerBusqueda):
+        primer_cero_sustractivo_c(tamano_bloque=1024)
+    assert llamadas == [(1, 1025)]
+    assert "60_000_000" not in inspect.getsource(primer_cero_sustractivo_c)
+
+
+def test_primer_cero_en_2_26_tiene_radicando_exacto_y_raiz_redondeada():
+    k = 2**26
+    radicando = k * k + 1
+    radicando_float = float(radicando)
+    assert int(radicando_float) == radicando
+    assert radicando_float == 2.0**52 + 1.0
+    assert math.sqrt(radicando_float) == float(k)
+
+    with localcontext() as contexto:
+        contexto.prec = 80
+        k_decimal = Decimal(k)
+        incremento_exacto = Decimal(radicando).sqrt() - k_decimal
+        siguiente = Decimal.from_float(math.nextafter(float(k), math.inf))
+        separacion = siguiente - k_decimal
+        media_ulp = separacion / 2
+
+    assert incremento_exacto > 0
+    assert incremento_exacto < media_ulp
+    assert incremento_exacto != media_ulp
+
+
 def test_cruce_de_1e_8_en_cancelacion_no_es_monotono():
     errores: dict[int, Decimal] = {}
     with localcontext() as contexto:
@@ -205,20 +255,39 @@ def test_bonus_b_incluye_entorno_de_dos_a_la_53():
     assert n / (n + 1.0) == 1.0
 
 
+def test_estadisticas_completas_de_representaciones_b():
+    estadisticas = estadisticas_representaciones_b(barrido_representaciones())
+    assert estadisticas["cantidad_N"] == 1001
+    assert estadisticas["telescopica_menor_error"] == 777
+    assert estadisticas["directa_menor_error"] == 217
+    assert estadisticas["empates"] == 7
+    assert estadisticas["ceros_directa"] == 68
+    assert estadisticas["ceros_telescopica"] == 97
+    assert estadisticas["error_medio_directa"] == pytest.approx(5.318604310255234e-16)
+    assert estadisticas["error_medio_telescopica"] == pytest.approx(3.78247693468693e-16)
+    assert estadisticas["error_maximo_directa"] == pytest.approx(1.6655805243139443e-15)
+    assert estadisticas["error_maximo_telescopica"] == pytest.approx(1.3324644194511555e-15)
+
+
 @pytest.mark.parametrize("n", [0, -1, 1.5, True])
 def test_n_invalido(n):
     with pytest.raises(ValueError):
         b_directa(n)
 
 
-def test_no_se_usa_sum_incorporada_en_src():
+def test_no_se_usan_sumatorias_incorporadas_en_src():
     ruta = Path(__file__).resolve().parents[1] / "src" / "experimentos.py"
     arbol = ast.parse(ruta.read_text(encoding="utf-8"))
-    llamadas = [
-        nodo
-        for nodo in ast.walk(arbol)
-        if isinstance(nodo, ast.Call)
-        and isinstance(nodo.func, ast.Name)
-        and nodo.func.id == "sum"
-    ]
+    llamadas = []
+    for nodo in ast.walk(arbol):
+        if not isinstance(nodo, ast.Call):
+            continue
+        if isinstance(nodo.func, ast.Name) and nodo.func.id in {"sum", "cumsum"}:
+            llamadas.append(nodo)
+        if isinstance(nodo.func, ast.Attribute) and nodo.func.attr in {
+            "sum",
+            "fsum",
+            "cumsum",
+        }:
+            llamadas.append(nodo)
     assert not llamadas

@@ -26,6 +26,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 import numpy as np  # noqa: E402
+from matplotlib.ticker import FuncFormatter  # noqa: E402
 
 
 RAIZ = Path(__file__).resolve().parents[1]
@@ -55,9 +56,15 @@ def configurar_salida() -> None:
             "legend.fontsize": 8,
             "axes.grid": True,
             "grid.alpha": 0.25,
-            "font.family": "DejaVu Sans",
+            "font.family": "DejaVu Serif",
+            "mathtext.fontset": "dejavuserif",
         }
     )
+
+
+def _decimal_coma(valor: float, _posicion: float | None = None) -> str:
+    """Formatea una marca decimal breve con coma para las figuras en español."""
+    return f"{valor:g}".replace(".", ",")
 
 
 def escribir_csv(nombre: str, filas: Sequence[dict[str, object]]) -> None:
@@ -179,21 +186,71 @@ def resumen_curva_asociativa(tipo: str, b: int | float, curva: np.ndarray, indic
     }
 
 
-def graficar_panel_asociatividad(valores: Sequence[int | float], tipo: str, nombre: str) -> list[dict[str, object]]:
+def graficar_panel_asociatividad(
+    valores: Sequence[int | float], tipo: str, nombre: str
+) -> list[dict[str, object]]:
+    """Genera los tres paneles de asociatividad y devuelve su resumen numérico.
+
+    En los casos flotantes, los paneles exteriores usan una ampliación vertical
+    independiente para mostrar las mesetas entre 16 y 53, mientras el panel
+    central conserva el rango completo hasta ``N=1000``.
+    """
     n = np.arange(1, 1001)
     filas: list[dict[str, object]] = []
-    fig, ejes = plt.subplots(1, 3, figsize=(13.5, 4.0), sharex=True, sharey=True)
+    es_entero = tipo == "int"
+    fig, ejes = plt.subplots(
+        1, 3, figsize=(13.5, 4.2), sharex=True, sharey=es_entero
+    )
     titulos = (r"$(1+b^k)-b^k$", r"$1+(b^k-b^k)$", r"$(1-b^k)+b^k$")
-    for base in valores:
+    colores = ("#1f5a94", "#b44b35", "#3f7f55", "#6f4c8b")
+    estilos = ("-", "--", "-.", ":")
+    maximos_exteriores = [0.0, 0.0]
+    for posicion_base, base in enumerate(valores):
         curvas = curvas_asociativas(1000, base)
         for indice, eje in enumerate(ejes):
-            eje.plot(n, curvas[indice], linewidth=1.15, label=f"b = {base:g}")
+            if isinstance(base, float):
+                etiqueta_base = f"{base:.1f}".replace(".", ",")
+            else:
+                etiqueta_base = str(base)
+            eje.plot(
+                n,
+                curvas[indice],
+                color=colores[posicion_base],
+                linestyle=estilos[posicion_base],
+                linewidth=1.25,
+                label=f"b = {etiqueta_base}",
+            )
+            if not es_entero and indice in (0, 2):
+                finitos = curvas[indice][np.isfinite(curvas[indice])]
+                if finitos.size:
+                    exterior = 0 if indice == 0 else 1
+                    maximos_exteriores[exterior] = max(
+                        maximos_exteriores[exterior], float(np.max(finitos))
+                    )
+                desviacion = primera_desviacion(curvas[indice])
+                if desviacion is not None and math.isfinite(curvas[indice, desviacion - 1]):
+                    eje.scatter(
+                        desviacion,
+                        curvas[indice, desviacion - 1],
+                        color=colores[posicion_base],
+                        marker="x",
+                        s=24,
+                        zorder=4,
+                    )
             filas.append(resumen_curva_asociativa(tipo, base, curvas[indice], indice))
     for indice, eje in enumerate(ejes):
         eje.plot(n, n, "k--", linewidth=0.9, label=r"$a_N=N$")
         eje.set_title(titulos[indice])
         eje.set_xlabel("Cantidad de términos, N")
-    ejes[0].set_ylabel(r"Resultado acumulado, $a_N$")
+        eje.set_ylabel(r"Resultado acumulado, $a_N$")
+        eje.xaxis.set_major_formatter(FuncFormatter(_decimal_coma))
+    if not es_entero:
+        for eje, maximo in zip((ejes[0], ejes[2]), maximos_exteriores):
+            margen = max(4.0, 0.12 * maximo)
+            eje.set_ylim(-0.04 * (maximo + margen), maximo + margen)
+            eje.yaxis.set_major_formatter(FuncFormatter(_decimal_coma))
+        ejes[1].set_ylim(-35, 1035)
+        ejes[1].yaxis.set_major_formatter(FuncFormatter(_decimal_coma))
     manejadores, etiquetas = ejes[-1].get_legend_handles_labels()
     fig.legend(manejadores, etiquetas, loc="upper center", ncol=len(etiquetas), frameon=False)
     fig.tight_layout(rect=(0, 0, 1, 0.91))
@@ -276,24 +333,41 @@ def suma_secuencial(valores: Iterable[float]) -> float:
 
 
 def suma_mayor_a_menor(n: int) -> float:
-    """Suma términos decrecientes: los mayores entran primero."""
+    """Suma ``N`` términos de ``b_N`` del mayor al menor.
+
+    Recibe un entero positivo y devuelve un ``float`` obtenido con un
+    acumulador explícito en el orden natural ``k=1,...,N``.
+    """
     return suma_secuencial(terminos_b(n))
 
 
 def suma_menor_a_mayor(n: int) -> float:
-    """Suma términos crecientes: los menores entran primero."""
+    """Suma ``N`` términos de ``b_N`` del menor al mayor.
+
+    Devuelve un ``float`` y conserva el orden inverso exacto de los términos
+    mediante un acumulador explícito.
+    """
     return suma_secuencial(reversed(terminos_b(n)))
 
 
 def suma_randomizada(n: int) -> float:
-    """Suma una permutación aleatoria; la única entrada es ``N``."""
+    """Suma una permutación aleatoria de los ``N`` términos de ``b_N``.
+
+    Usa ``random.shuffle`` y el estado global de :mod:`random`, por lo que
+    ejecuciones sucesivas pueden variar. Una ejecución se reproduce llamando
+    antes a ``random.seed(...)``. Devuelve el ``float`` acumulado en ese orden.
+    """
     valores = terminos_b(n).tolist()
     random.shuffle(valores)
     return suma_secuencial(valores)
 
 
 def suma_kahan(n: int) -> float:
-    """Suma compensada de Kahan en orden natural."""
+    """Aplica la suma compensada de Kahan a ``N`` términos de ``b_N``.
+
+    Recibe un entero positivo y devuelve un ``float``. Tanto el total como la
+    compensación se actualizan explícitamente en el orden natural.
+    """
     total = 0.0
     compensacion = 0.0
     for termino in terminos_b(n):
@@ -366,55 +440,44 @@ def barrido_orden_suma(valores_n: Sequence[int], semilla: int) -> list[dict[str,
 
 
 def graficar_errores_orden(filas: Sequence[dict[str, object]], nombre: str) -> None:
+    """Grafica los errores de los cuatro órdenes en paneles independientes.
+
+    Cada panel conserva los ceros del CSV mediante un piso exclusivamente
+    visual y ajusta su propia escala logarítmica para no ocultar variaciones.
+    """
     n = np.asarray([fila["N"] for fila in filas], dtype=np.int64)
-    fig, ejes = plt.subplots(2, 1, figsize=(7.6, 6.0), sharex=True, sharey=True)
-    paneles = (
-        (
-            ejes[0],
-            "(a) Mayor a menor y orden aleatorio",
-            (
-                ("error_mayor_a_menor", "Mayor a menor módulo", "#1f77b4", "-", "o", (0, 45)),
-                ("error_randomizada", "Orden aleatorio", "#d95f02", "--", "s", (20, 45)),
-            ),
-        ),
-        (
-            ejes[1],
-            "(b) Menor a mayor y Kahan",
-            (
-                ("error_menor_a_mayor", "Menor a mayor módulo", "#2a7f3e", "-", "o", (0, 45)),
-                ("error_kahan", "Kahan", "#7b3294", ":", "s", (20, 45)),
-            ),
-        ),
+    fig, ejes = plt.subplots(2, 2, figsize=(7.8, 6.2), sharex=True)
+    metodos = (
+        ("error_mayor_a_menor", "(a) Mayor a menor módulo", "#1f5a94", "o"),
+        ("error_menor_a_mayor", "(b) Menor a mayor módulo", "#3f7f55", "s"),
+        ("error_randomizada", "(c) Orden aleatorio", "#b44b35", "D"),
+        ("error_kahan", "(d) Kahan", "#6f4c8b", "^"),
     )
-    for eje, titulo, metodos in paneles:
-        for clave, etiqueta, color, estilo, marcador, frecuencia in metodos:
-            originales = np.asarray([fila[clave] for fila in filas], dtype=np.float64)
-            eje.plot(
-                n,
-                np.maximum(originales, PISO_GRAFICO),
-                label=etiqueta,
-                color=color,
-                linestyle=estilo,
-                linewidth=0.9,
-                marker=marcador,
-                markersize=2.4,
-                markevery=frecuencia,
-            )
+    for eje, (clave, etiqueta, color, marcador) in zip(ejes.flat, metodos):
+        originales = np.asarray([fila[clave] for fila in filas], dtype=np.float64)
+        visibles = np.maximum(originales, PISO_GRAFICO)
+        eje.scatter(
+            n,
+            visibles,
+            s=7,
+            color=color,
+            marker=marcador,
+            linewidths=0,
+            alpha=0.75,
+            rasterized=True,
+        )
         eje.set_yscale("log")
-        eje.set_ylabel("Error relativo")
-        eje.set_title(titulo, fontsize=9.5, loc="left")
-        eje.legend(loc="best")
+        eje.set_title(etiqueta, fontsize=9.5, loc="left")
         eje.grid(alpha=0.22)
-    ejes[1].set_xlabel("Cantidad de términos, N")
-    ejes[1].text(
-        0.01,
-        0.015,
-        r"Piso solo gráfico: $5\times10^{-18}$ para errores originales iguales a cero.",
-        transform=ejes[1].transAxes,
-        fontsize=7.5,
-        color="0.32",
-    )
-    fig.tight_layout(h_pad=0.8)
+    escala_x = 1_000_000 if int(n[-1]) >= 1_000_000 else 1_000
+    potencia_x = 6 if escala_x == 1_000_000 else 3
+    for eje in ejes.flat:
+        eje.xaxis.set_major_formatter(
+            FuncFormatter(lambda valor, posicion: _decimal_coma(valor / escala_x, posicion))
+        )
+    fig.supxlabel(rf"Cantidad de términos, $N$ ($\times 10^{{{potencia_x}}}$)", fontsize=9.5)
+    fig.supylabel("Error relativo", fontsize=9.5)
+    fig.tight_layout(h_pad=1.0, w_pad=0.9)
     fig.savefig(DIR_FIGURAS / nombre, bbox_inches="tight")
     plt.close(fig)
 
@@ -458,14 +521,27 @@ def estadisticas_repeticiones(filas: Sequence[dict[str, object]]) -> dict[str, o
 
 
 def graficar_repeticiones(filas: Sequence[dict[str, object]]) -> None:
+    """Muestra la dispersión de las permutaciones en unidades de ``10^-14``."""
     ejecuciones = [fila["ejecucion"] for fila in filas]
-    errores = [max(float(fila["error_relativo"]), PISO_GRAFICO) for fila in filas]
+    errores = np.asarray([fila["error_relativo"] for fila in filas], dtype=np.float64)
+    errores_escalados = errores / 1e-14
+    minimo = float(np.min(errores_escalados))
+    mediana = float(np.median(errores_escalados))
+    maximo = float(np.max(errores_escalados))
     fig, eje = plt.subplots(figsize=(7.2, 4.2))
-    eje.scatter(ejecuciones, errores, s=25, color="#7a1f5c")
-    eje.set_yscale("log")
+    eje.scatter(ejecuciones, errores_escalados, s=28, color="#6f4c8b", zorder=3)
+    for valor, etiqueta, estilo, color in (
+        (minimo, "Mínimo", ":", "#3f7f55"),
+        (mediana, "Mediana", "--", "#1f5a94"),
+        (maximo, "Máximo", "-.", "#b44b35"),
+    ):
+        eje.axhline(valor, color=color, linestyle=estilo, linewidth=0.9, label=etiqueta)
     eje.set_xlabel("Ejecución")
-    eje.set_ylabel("Error relativo")
+    eje.set_ylabel(r"Error relativo ($\times 10^{-14}$)")
     eje.set_xticks([1, 5, 10, 15, 20, 25, 30])
+    eje.yaxis.set_major_formatter(FuncFormatter(_decimal_coma))
+    eje.set_ylim(0, maximo * 1.12)
+    eje.legend(loc="upper right", ncol=3, frameon=True)
     fig.tight_layout()
     fig.savefig(DIR_FIGURAS / "orden_random_repeticiones.png", bbox_inches="tight")
     plt.close(fig)
@@ -477,6 +553,11 @@ def graficar_repeticiones(filas: Sequence[dict[str, object]]) -> None:
 
 
 def b_directa(n: int) -> float:
+    """Calcula la representación directa de ``b_N`` con ``N`` términos.
+
+    Usa un acumulador explícito en orden natural y devuelve un ``float``;
+    cada término realiza la división ``1/[k(k+1)]``.
+    """
     validar_n(n)
     total = 0.0
     for k in range(1, n + 1):
@@ -485,6 +566,11 @@ def b_directa(n: int) -> float:
 
 
 def b_telescopica(n: int) -> float:
+    """Calcula la representación telescópica de ``b_N`` con ``N`` términos.
+
+    Devuelve un ``float`` acumulado explícitamente; cada término se evalúa
+    como ``1/k - 1/(k+1)``, con sus redondeos intermedios propios.
+    """
     validar_n(n)
     total = 0.0
     for k in range(1, n + 1):
@@ -493,6 +579,11 @@ def b_telescopica(n: int) -> float:
 
 
 def c_racionalizada(n: int) -> float:
+    """Suma ``N`` términos de la forma racionalizada y estable de ``c_N``.
+
+    Recibe un entero positivo y devuelve el ``float`` obtenido mediante un
+    acumulador explícito de términos siempre positivos.
+    """
     validar_n(n)
     total = 0.0
     for k in range(1, n + 1):
@@ -501,6 +592,11 @@ def c_racionalizada(n: int) -> float:
 
 
 def c_sustractiva(n: int) -> float:
+    """Suma ``N`` términos sustractivos de ``c_N``.
+
+    La salida es un ``float``; para ``k`` grande, la resta entre cantidades
+    cercanas puede sufrir cancelación y terminar produciendo términos nulos.
+    """
     validar_n(n)
     total = 0.0
     for k in range(1, n + 1):
@@ -509,6 +605,7 @@ def c_sustractiva(n: int) -> float:
 
 
 def barrido_representaciones() -> list[dict[str, object]]:
+    """Genera las 1001 filas comparables de las representaciones de ``b_N`` y ``c_N``."""
     ns = np.concatenate((np.array([1], dtype=np.int64), np.arange(10, 10001, 10, dtype=np.int64)))
     posiciones = ns - 1
     k = np.arange(1, 10001, dtype=np.float64)
@@ -539,7 +636,36 @@ def barrido_representaciones() -> list[dict[str, object]]:
     return filas
 
 
+def estadisticas_representaciones_b(
+    filas: Sequence[dict[str, object]],
+) -> dict[str, int | float]:
+    """Resume la comparación completa de errores de las dos formas de ``b_N``."""
+    errores_directa = np.asarray(
+        [fila["error_b_directa"] for fila in filas], dtype=np.float64
+    )
+    errores_telescopica = np.asarray(
+        [fila["error_b_telescopica"] for fila in filas], dtype=np.float64
+    )
+    return {
+        "cantidad_N": int(errores_directa.size),
+        "telescopica_menor_error": int(
+            np.count_nonzero(errores_telescopica < errores_directa)
+        ),
+        "directa_menor_error": int(
+            np.count_nonzero(errores_directa < errores_telescopica)
+        ),
+        "empates": int(np.count_nonzero(errores_directa == errores_telescopica)),
+        "error_medio_directa": float(np.mean(errores_directa)),
+        "error_medio_telescopica": float(np.mean(errores_telescopica)),
+        "ceros_directa": int(np.count_nonzero(errores_directa == 0.0)),
+        "ceros_telescopica": int(np.count_nonzero(errores_telescopica == 0.0)),
+        "error_maximo_directa": float(np.max(errores_directa)),
+        "error_maximo_telescopica": float(np.max(errores_telescopica)),
+    }
+
+
 def graficar_representaciones(filas: Sequence[dict[str, object]]) -> None:
+    """Genera las figuras comparativas de las representaciones de ``b_N`` y ``c_N``."""
     n = np.asarray([fila["N"] for fila in filas], dtype=np.int64)
     fig, eje = plt.subplots(figsize=(7.5, 4.4))
     for clave, etiqueta, color in (
@@ -569,6 +695,7 @@ def graficar_representaciones(filas: Sequence[dict[str, object]]) -> None:
 
 
 def bonus_formas_cerradas_b() -> list[dict[str, object]]:
+    """Evalúa el bonus cerrado de ``b_N`` alrededor de potencias de dos."""
     candidatos = {int(v) for v in np.logspace(0, 18, 361, dtype=np.float64) if v >= 1}
     for potencia in range(1, 61):
         centro = 2**potencia
@@ -591,6 +718,7 @@ def bonus_formas_cerradas_b() -> list[dict[str, object]]:
 
 
 def bonus_terminos_c() -> list[dict[str, object]]:
+    """Evalúa términos individuales de ``c_N`` sobre una grilla logarítmica."""
     ks = np.unique(np.logspace(0, 9, 4000, dtype=np.float64).astype(np.int64))
     k = ks.astype(np.float64)
     racionalizado = 1.0 / (np.sqrt(k * k + 1.0) + k)
@@ -609,7 +737,28 @@ def bonus_terminos_c() -> list[dict[str, object]]:
     ]
 
 
+def primer_cero_sustractivo_c(tamano_bloque: int = 1_000_000) -> int:
+    """Busca exhaustivamente el primer término sustractivo nulo desde ``k=1``.
+
+    El recorrido vectorizado avanza por bloques para limitar la memoria y se
+    detiene en cuanto ``sqrt(k**2 + 1) - k`` se redondea a cero. El punto de
+    partida no presupone la ubicación del resultado.
+    """
+    if tamano_bloque < 1:
+        raise ValueError("El tamaño de bloque debe ser positivo")
+    inicio = 1
+    while True:
+        fin = inicio + tamano_bloque
+        bloque = np.arange(inicio, fin, dtype=np.float64)
+        terminos = np.sqrt(bloque * bloque + 1.0) - bloque
+        indices = np.flatnonzero(terminos == 0.0)
+        if indices.size:
+            return inicio + int(indices[0])
+        inicio = fin
+
+
 def umbrales_cancelacion_c() -> dict[str, int | None]:
+    """Determina los primeros cruces de error y el primer cero sustractivo."""
     k = np.arange(1, 2_000_001, dtype=np.float64)
     racionalizado = 1.0 / (np.sqrt(k * k + 1.0) + k)
     sustractivo = np.sqrt(k * k + 1.0) - k
@@ -619,19 +768,16 @@ def umbrales_cancelacion_c() -> dict[str, int | None]:
         indices = np.flatnonzero(errores >= umbral)
         resultado[f"primer_k_error_relativo_ge_{etiqueta}"] = int(indices[0] + 1) if indices.size else None
 
-    primer_cero: int | None = None
-    for inicio in range(60_000_000, 70_000_001, 1_000_000):
-        bloque = np.arange(inicio, inicio + 1_000_000, dtype=np.float64)
-        terminos = np.sqrt(bloque * bloque + 1.0) - bloque
-        indices = np.flatnonzero(terminos == 0.0)
-        if indices.size:
-            primer_cero = inicio + int(indices[0])
-            break
-    resultado["primer_k_termino_sustractivo_cero"] = primer_cero
+    resultado["primer_k_termino_sustractivo_cero"] = primer_cero_sustractivo_c()
     return resultado
 
 
-def graficar_bonus(filas_b: Sequence[dict[str, object]], filas_c: Sequence[dict[str, object]], umbrales: dict[str, int | None]) -> None:
+def graficar_bonus(
+    filas_b: Sequence[dict[str, object]],
+    filas_c: Sequence[dict[str, object]],
+    umbrales: dict[str, int | None],
+) -> None:
+    """Genera las dos figuras de bonus a partir de filas ya calculadas."""
     n = np.asarray([fila["N"] for fila in filas_b], dtype=np.float64)
     diferencias = np.asarray([fila["diferencia_absoluta"] for fila in filas_b], dtype=np.float64)
     positivos = diferencias > 0.0
@@ -685,6 +831,7 @@ def fila_por_n(filas: Sequence[dict[str, object]], n: int) -> dict[str, object]:
 
 
 def ejecutar_experimentos() -> dict[str, object]:
+    """Regenera todos los CSV, figuras y el resumen JSON del estudio."""
     configurar_salida()
 
     asociatividad: list[dict[str, object]] = []
@@ -746,6 +893,9 @@ def ejecutar_experimentos() -> dict[str, object]:
         "orden_N_10000": fila_por_n(orden_pequeno, 10000),
         "orden_N_1000000": fila_por_n(orden_grande, 1_000_000),
         "random_N_1000000": estadisticas_repeticiones(repeticiones),
+        "estadisticas_representaciones_b": estadisticas_representaciones_b(
+            representaciones
+        ),
         "representaciones_N_10000": fila_por_n(representaciones, 10000),
         "bonus_b_N_2_53": fila_por_n(bonus_b, 2**53),
         "bonus_c": umbrales_c,

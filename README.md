@@ -16,11 +16,14 @@ Fecha de entrega: 4 de octubre de 2026.
 - `src/experimentos.py`: algoritmos, barridos, escritura de CSV y generación de figuras.
 - `tests/test_experimentos.py`: pruebas matemáticas, de interfaz y reproducibilidad.
 - `datos/`: resultados numéricos generados por los experimentos.
+- `datos/resumen.json`: entorno, semillas y resultados destacados de cada experimento en un formato fácil de consultar.
 - `figuras/`: gráficos generados a partir de los CSV.
 - `requirements.txt`: dependencias de ejecución.
 - `requirements-dev.txt`: dependencias de ejecución y pruebas.
 
 Las funciones solicitadas usan acumuladores explícitos y ninguna invoca la función incorporada `sum`. `numpy.add.accumulate` se utiliza únicamente como optimización interna de los barridos extensos; las pruebas comprueban su equivalencia con la acumulación secuencial explícita.
+
+El proyecto utiliza únicamente Python y las dependencias indicadas a continuación. No usa Node.js ni requiere ejecutar `npm install`.
 
 ## Instalación
 
@@ -64,6 +67,8 @@ En Linux o macOS:
 ```
 
 La ejecución regenera todos los archivos de `datos/` y `figuras/`. Incluye exactamente los rangos `N=10,20,...,10000`, `N=1000,2000,...,1000000` y `N=1,10,20,...,10000` donde corresponde. Las semillas de los barridos aleatorios quedan registradas en los CSV.
+
+La ejecución completa tardó aproximadamente 28 segundos (27,867 s medidos) en Windows 11 con Python 3.14.3 y las versiones fijadas. El tiempo puede variar según el procesador, el sistema operativo y las versiones instaladas; las 30 permutaciones de un millón de términos constituyen la parte más costosa.
 
 Los rangos exigidos se construyen con pasos enteros. Las grillas auxiliares de los bonus usan `numpy.logspace`; su conversión a enteros y el renderizado pueden variar ligeramente entre plataformas. Por eso, reproducir el procedimiento y las semillas no garantiza archivos binariamente idénticos fuera del entorno probado.
 

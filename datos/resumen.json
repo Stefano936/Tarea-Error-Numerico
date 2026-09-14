@@ -505,6 +505,18 @@
     "error_maximo": 6.128437224361961e-14,
     "desvio_estandar_resultado": 2.2480917342052706e-14
   },
+  "estadisticas_representaciones_b": {
+    "cantidad_N": 1001,
+    "telescopica_menor_error": 777,
+    "directa_menor_error": 217,
+    "empates": 7,
+    "error_medio_directa": 5.318604310255234e-16,
+    "error_medio_telescopica": 3.7824769346869304e-16,
+    "ceros_directa": 68,
+    "ceros_telescopica": 97,
+    "error_maximo_directa": 1.6655805243139443e-15,
+    "error_maximo_telescopica": 1.3324644194511555e-15
+  },
   "representaciones_N_10000": {
     "N": 10000,
     "b_directa": 0.9999000099990007,
