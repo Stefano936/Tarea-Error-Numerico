@@ -1,10 +1,8 @@
-import ast
 import inspect
 import math
 import random
 from decimal import Decimal, localcontext
 from fractions import Fraction
-from pathlib import Path
 
 import numpy as np
 import pytest
@@ -91,6 +89,24 @@ def test_formas_de_b_contra_referencia_racional_exacta(n):
             abs(Fraction.from_float(resultado) - exacto) / exacto
         )
         assert error_relativo_exacto < Fraction(1, 10**12)
+
+
+def test_resta_telescopica_es_exacta_y_los_errores_telescopan():
+    """Respalda el mecanismo descrito para la forma telescópica de b_N."""
+    for k in range(1, 20_001):
+        actual = 1.0 / k
+        siguiente = 1.0 / (k + 1)
+        assert Fraction(actual) - Fraction(siguiente) == Fraction(
+            actual - siguiente
+        )
+
+    for n in (1_000, 10_000):
+        acumulado_exacto = Fraction(0)
+        for k in range(1, n + 1):
+            acumulado_exacto += Fraction(1.0 / k - 1.0 / (k + 1))
+
+        extremo = Fraction(1.0) - Fraction(1.0 / (n + 1))
+        assert acumulado_exacto == extremo
 
 
 def test_error_cero_float_no_implica_exactitud_real():
@@ -276,18 +292,28 @@ def test_n_invalido(n):
 
 
 def test_no_se_usan_sumatorias_incorporadas_en_src():
-    ruta = Path(__file__).resolve().parents[1] / "src" / "experimentos.py"
-    arbol = ast.parse(ruta.read_text(encoding="utf-8"))
-    llamadas = []
-    for nodo in ast.walk(arbol):
-        if not isinstance(nodo, ast.Call):
-            continue
-        if isinstance(nodo.func, ast.Name) and nodo.func.id in {"sum", "cumsum"}:
-            llamadas.append(nodo)
-        if isinstance(nodo.func, ast.Attribute) and nodo.func.attr in {
-            "sum",
-            "fsum",
-            "cumsum",
-        }:
-            llamadas.append(nodo)
-    assert not llamadas
+    assert experimentos.contar_llamadas_sum_incorporada() == 0
+
+
+def test_control_estatico_recorre_src_y_distingue_llamadas(
+    tmp_path, monkeypatch
+):
+    src = tmp_path / "src"
+    subdirectorio = src / "paquete"
+    subdirectorio.mkdir(parents=True)
+    (src / "nombres.py").write_text(
+        '''"""sum(), fsum() y cumsum() mencionadas como documentación."""
+# numpy.sum([1]) tampoco es una llamada real.
+texto = "math.fsum([1.0])"
+sum([1])
+fsum([1.0])
+cumsum([1.0])
+''',
+        encoding="utf-8",
+    )
+    (subdirectorio / "atributos.py").write_text(
+        "numpy.sum([1])\nmath.fsum([1.0])\narreglo.cumsum()\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(experimentos, "RAIZ", tmp_path)
+    assert experimentos.contar_llamadas_sum_incorporada() == 6

@@ -21,7 +21,7 @@ Fecha de entrega: 4 de octubre de 2026.
 - `requirements.txt`: dependencias de ejecución.
 - `requirements-dev.txt`: dependencias de ejecución y pruebas.
 
-Las funciones solicitadas usan acumuladores explícitos y ninguna invoca la función incorporada `sum`. `numpy.add.accumulate` se utiliza únicamente como optimización interna de los barridos extensos; las pruebas comprueban su equivalencia con la acumulación secuencial explícita.
+Las funciones solicitadas usan acumuladores explícitos y ninguna invoca `sum`, `numpy.sum`, `math.fsum` ni `cumsum`. `numpy.add.accumulate` se utiliza únicamente como optimización interna de los barridos extensos; las pruebas comprueban su equivalencia con la acumulación secuencial explícita.
 
 El proyecto utiliza únicamente Python y las dependencias indicadas a continuación. No usa Node.js ni requiere ejecutar `npm install`.
 
@@ -84,7 +84,7 @@ En Linux o macOS:
 .venv/bin/python -m pytest -q
 ```
 
-También puede verificarse por separado la ausencia de llamadas a `sum`:
+También puede ejecutarse por separado el control de llamadas prohibidas:
 
 ```powershell
 .\.venv\Scripts\python.exe src\experimentos.py --verificar-sum
@@ -95,5 +95,7 @@ En Linux o macOS:
 ```bash
 .venv/bin/python src/experimentos.py --verificar-sum
 ```
+
+El control verifica que el código de `src/` no invoque `sum`, `numpy.sum`, `math.fsum` ni `cumsum`. El análisis se realiza sobre el árbol sintáctico de todos los archivos Python de esa carpeta, por lo que no confunde comentarios o textos con llamadas reales.
 
 Repositorio público: <https://github.com/Stefano936/Tarea-Error-Numerico>

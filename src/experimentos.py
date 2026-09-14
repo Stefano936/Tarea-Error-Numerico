@@ -220,6 +220,23 @@ def graficar_panel_asociatividad(
                 linewidth=1.25,
                 label=f"b = {etiqueta_base}",
             )
+            if not es_entero and indice == 1:
+                posiciones_finitas = np.flatnonzero(np.isfinite(curvas[indice]))
+                if (
+                    posiciones_finitas.size
+                    and posiciones_finitas[-1] < curvas[indice].size - 1
+                ):
+                    ultimo_indice = int(posiciones_finitas[-1])
+                    eje.scatter(
+                        n[ultimo_indice],
+                        curvas[indice, ultimo_indice],
+                        marker="o",
+                        s=28,
+                        facecolors="none",
+                        edgecolors=colores[posicion_base],
+                        linewidths=1.1,
+                        zorder=5,
+                    )
             if not es_entero and indice in (0, 2):
                 finitos = curvas[indice][np.isfinite(curvas[indice])]
                 if finitos.size:
@@ -678,7 +695,6 @@ def graficar_representaciones(filas: Sequence[dict[str, object]]) -> None:
     eje.set_xlabel("Cantidad de términos, N")
     eje.set_ylabel("Error relativo")
     eje.legend(loc="best")
-    eje.text(0.01, 0.015, r"Piso solo gráfico: $5\times10^{-18}$ para errores nulos.", transform=eje.transAxes, fontsize=7.5, color="0.32")
     fig.tight_layout()
     fig.savefig(DIR_FIGURAS / "representaciones_b_error.png", bbox_inches="tight")
     plt.close(fig)
@@ -814,12 +830,27 @@ def graficar_bonus(
 
 
 def contar_llamadas_sum_incorporada() -> int:
-    """Control estático utilizado también desde las pruebas."""
-    arbol = ast.parse(Path(__file__).read_text(encoding="utf-8"))
+    """Cuenta mediante AST las llamadas prohibidas en los módulos de ``src/``.
+
+    Incluye llamadas por nombre a ``sum``, ``fsum`` y ``cumsum``, además de
+    accesos por atributo con esos nombres. Los textos y comentarios no forman
+    nodos de llamada y, por tanto, no se cuentan.
+    """
+    nombres_prohibidos = {"sum", "fsum", "cumsum"}
     contador = 0
-    for nodo in ast.walk(arbol):
-        if isinstance(nodo, ast.Call) and isinstance(nodo.func, ast.Name) and nodo.func.id == "sum":
-            contador += 1
+    for ruta in sorted((RAIZ / "src").rglob("*.py")):
+        arbol = ast.parse(ruta.read_text(encoding="utf-8"), filename=str(ruta))
+        for nodo in ast.walk(arbol):
+            if not isinstance(nodo, ast.Call):
+                continue
+            if isinstance(nodo.func, ast.Name):
+                if nodo.func.id in nombres_prohibidos:
+                    contador += 1
+            elif (
+                isinstance(nodo.func, ast.Attribute)
+                and nodo.func.attr in nombres_prohibidos
+            ):
+                contador += 1
     return contador
 
 
@@ -907,11 +938,17 @@ def ejecutar_experimentos() -> dict[str, object]:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--verificar-sum", action="store_true", help="solo verifica que no se use la función incorporada sum")
+    parser.add_argument(
+        "--verificar-sum",
+        action="store_true",
+        help=(
+            "verifica que src/ no invoque sum, numpy.sum, math.fsum ni cumsum"
+        ),
+    )
     argumentos = parser.parse_args()
     if argumentos.verificar_sum:
         llamadas = contar_llamadas_sum_incorporada()
-        print(f"Llamadas a la función incorporada sum: {llamadas}")
+        print(f"Llamadas prohibidas en src/: {llamadas}")
         raise SystemExit(1 if llamadas else 0)
     ejecutar_experimentos()
     print(f"Experimentos finalizados. Datos: {DIR_DATOS}")
